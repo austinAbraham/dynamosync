@@ -45,8 +45,20 @@ enriched as (
         update_date,
         free_trial_end_date,
         amendment_status,
-        fulfillment_status
+        fulfillment_status,
+        
+        -- Additional fields from source
+        cancellation_process_date,
+        cooling_off_period_end_date,
+        heal_offer_id,
+        placement,
+        tag_name,
+        originator,
+        
+        -- Flag for deleted records
+        fivetran_deleted
     from subscriptions
+    where fivetran_deleted = false  -- Only include non-deleted records
 )
 
 select * from enriched

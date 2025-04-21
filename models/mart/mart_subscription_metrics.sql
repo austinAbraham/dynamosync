@@ -13,7 +13,46 @@ lifecycle_data as (
     select * from {{ ref('int_subscription_lifecycles') }}
 ),
 
--- Calculate daily metrics
+-- Get all subscription start dates to use as snapshots for metrics
+subscription_dates as (
+    select distinct
+        date_trunc('day', start_date) as metric_date
+    from enriched_subscriptions
+    
+    union
+    
+    select distinct
+        date_trunc('day', cancellation_date) as metric_date
+    from enriched_subscriptions
+    where cancellation_date is not null
+    
+    union
+    
+    select distinct
+        date_trunc('day', end_date) as metric_date
+    from enriched_subscriptions
+    where end_date is not null
+),
+
+-- Get all brand/channel combinations
+dimensions as (
+    select distinct
+        brand,
+        channel
+    from enriched_subscriptions
+),
+
+-- Create a base of dates and dimensions for complete metrics coverage
+date_dimension_cross as (
+    select
+        sd.metric_date,
+        d.brand,
+        d.channel
+    from subscription_dates sd
+    cross join dimensions d
+),
+
+-- Calculate daily metrics (new subscriptions)
 daily_metrics as (
     select
         date_trunc('day', start_date) as metric_date,
@@ -39,58 +78,37 @@ churn_metrics as (
     group by 1, 2, 3
 ),
 
--- Create a date dimension since we don't have the date spine yet
-date_dimension as (
-    select distinct
-        date_trunc('day', d) as date
-    from (
-        select dateadd('day', seq4(), dateadd('year', -1, current_date())) as d
-        from table(generator(rowcount => 730)) -- ~2 years of dates
-    )
-    where d <= dateadd('year', 1, current_date())
-),
-
--- Cross join with brands and channels to ensure we have all combinations
-dimensions as (
-    select distinct
-        date_dimension.date as metric_date,
-        es.brand,
-        es.channel
-    from date_dimension
-    cross join (select distinct brand, channel from enriched_subscriptions) es
-),
-
 -- Active subscriptions by day
 active_subscriptions as (
     select
-        date_trunc('day', d.metric_date) as metric_date,
-        d.brand,
-        d.channel,
+        ddc.metric_date,
+        ddc.brand,
+        ddc.channel,
         count(distinct case 
-            when es.start_date <= d.metric_date 
-                and (es.end_date is null or es.end_date >= d.metric_date)
-                and (es.cancellation_date is null or es.cancellation_date > d.metric_date)
+            when es.start_date <= ddc.metric_date 
+                and (es.end_date is null or es.end_date >= ddc.metric_date)
+                and (es.cancellation_date is null or es.cancellation_date > ddc.metric_date)
             then es.subscription_id 
         end) as active_subscriptions,
         count(distinct case 
-            when es.start_date <= d.metric_date 
-                and (es.end_date is null or es.end_date >= d.metric_date)
-                and (es.cancellation_date is null or es.cancellation_date > d.metric_date)
+            when es.start_date <= ddc.metric_date 
+                and (es.end_date is null or es.end_date >= ddc.metric_date)
+                and (es.cancellation_date is null or es.cancellation_date > ddc.metric_date)
             then es.customer_id 
         end) as active_customers
-    from dimensions d
+    from date_dimension_cross ddc
     left join enriched_subscriptions es
-        on d.brand = es.brand
-        and d.channel = es.channel
+        on ddc.brand = es.brand
+        and ddc.channel = es.channel
     group by 1, 2, 3
 ),
 
 -- Combine metrics
 combined_metrics as (
     select
-        coalesce(d.metric_date, c.metric_date, a.metric_date) as metric_date,
-        coalesce(d.brand, c.brand, a.brand) as brand,
-        coalesce(d.channel, c.channel, a.channel) as channel,
+        coalesce(a.metric_date, d.metric_date, c.metric_date) as metric_date,
+        coalesce(a.brand, d.brand, c.brand) as brand,
+        coalesce(a.channel, d.channel, c.channel) as channel,
         coalesce(d.new_subscriptions, 0) as new_subscriptions,
         coalesce(d.new_trial_subscriptions, 0) as new_trial_subscriptions,
         coalesce(d.new_customers, 0) as new_customers,
@@ -98,15 +116,15 @@ combined_metrics as (
         coalesce(c.churned_customers, 0) as churned_customers,
         coalesce(a.active_subscriptions, 0) as active_subscriptions,
         coalesce(a.active_customers, 0) as active_customers
-    from daily_metrics d
+    from active_subscriptions a
+    full outer join daily_metrics d
+        on a.metric_date = d.metric_date
+        and a.brand = d.brand
+        and a.channel = d.channel
     full outer join churn_metrics c
-        on d.metric_date = c.metric_date
-        and d.brand = c.brand
-        and d.channel = c.channel
-    full outer join active_subscriptions a
-        on coalesce(d.metric_date, c.metric_date) = a.metric_date
-        and coalesce(d.brand, c.brand) = a.brand
-        and coalesce(d.channel, c.channel) = a.channel
+        on a.metric_date = c.metric_date
+        and a.brand = c.brand
+        and a.channel = c.channel
 ),
 
 final_metrics as (

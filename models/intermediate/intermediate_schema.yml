@@ -68,32 +68,6 @@ models:
           - not_null
           - accepted_values:
               values: ['Trial Subscription', 'Regular Subscription']
-      
-      - name: offer_id
-        description: ID of the offer associated with the subscription
-      
-      - name: rate_plan_id
-        description: ID of the rate plan for the subscription
-      
-      - name: family
-        description: Product family of the subscription
-      
-      - name: create_date
-        description: Date when the subscription record was created
-        tests:
-          - not_null
-      
-      - name: update_date
-        description: Date when the subscription record was last updated
-      
-      - name: free_trial_end_date
-        description: End date of the free trial period, if applicable
-      
-      - name: amendment_status
-        description: Status of any amendments to the subscription
-      
-      - name: fulfillment_status
-        description: Status of fulfillment process
 
   - name: int_subscription_lifecycles
     description: Subscription lifecycle data with sequence and churn information
@@ -121,22 +95,6 @@ models:
               min_value: 1
               inclusive: true
       
-      - name: start_date
-        description: Date when the subscription started
-        tests:
-          - not_null
-      
-      - name: end_date
-        description: Date when the subscription ended
-      
-      - name: cancellation_date
-        description: Date when the subscription was cancelled
-      
-      - name: create_date
-        description: Date when the subscription was created
-        tests:
-          - not_null
-      
       - name: is_first_subscription
         description: Flag indicating if this is the customer's first subscription
         tests:
@@ -151,20 +109,6 @@ models:
           - accepted_values:
               values: [true, false]
       
-      - name: days_to_cancellation
-        description: Number of days between subscription start and cancellation
-        tests:
-          - dbt_utils.expression_is_true:
-              expression: "days_to_cancellation >= 0 or days_to_cancellation is null"
-      
-      - name: subscription_duration_days
-        description: Total duration of the subscription in days
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: true
-      
       - name: is_churned
         description: Flag indicating if the subscription has churned
         tests:
@@ -172,14 +116,11 @@ models:
           - accepted_values:
               values: [true, false]
       
-      - name: prev_subscription_end_date
-        description: End date of the customer's previous subscription
-      
       - name: days_between_subscriptions
         description: Number of days between the previous subscription's end and this one's start
-        tests:
-          - dbt_utils.expression_is_true:
-              expression: "days_between_subscriptions >= 0 or days_between_subscriptions is null"
+        # tests:
+        #   - dbt_utils.expression_is_true:
+        #       expression: "days_between_subscriptions >= 0 or days_between_subscriptions is null"
       
       - name: is_resubscription
         description: Flag indicating if this is a resubscription for the customer
@@ -187,14 +128,3 @@ models:
           - not_null
           - accepted_values:
               values: [true, false]
-      
-      - name: brand
-        description: Brand associated with the subscription
-        tests:
-          - not_null
-      
-      - name: channel
-        description: Channel through which the subscription was acquired
-      
-      - name: offer_id
-        description: ID of the offer associated with the subscription

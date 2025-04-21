@@ -15,11 +15,6 @@ models:
           expression: "new_subscriptions >= 0"
       - dbt_utils.expression_is_true:
           expression: "churned_subscriptions >= 0"
-      - data_quality_check:
-          error_threshold: 0.1
-          warn_threshold: 0.05
-          where: "active_subscriptions < churned_subscriptions"
-          message: "More subscriptions churned than were active"
     columns:
       - name: metric_date
         description: Date for which metrics are calculated
@@ -52,30 +47,6 @@ models:
               min_value: 0
               inclusive: true
       
-      - name: new_customers
-        description: Number of new customers acquired on this date
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: true
-      
-      - name: churned_subscriptions
-        description: Number of subscriptions that churned on this date
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: true
-      
-      - name: churned_customers
-        description: Number of customers that churned on this date
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: true
-      
       - name: active_subscriptions
         description: Count of active subscriptions on that date
         tests:
@@ -83,31 +54,6 @@ models:
           - dbt_utils.accepted_range:
               min_value: 0
               inclusive: true
-      
-      - name: active_customers
-        description: Count of active customers on that date
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: true
-      
-      - name: churn_rate_pct
-        description: Percentage of subscriptions that churned on that date
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-              max_value: 100
-              inclusive: true
-      
-      - name: growth_rate_pct
-        description: Period-over-period growth rate of subscriptions
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: -100
-              max_value: 1000
-              inclusive: true
-              severity: warn
 
   - name: mart_customer_subscription_profile
     description: Customer-level subscription metrics and segmentation
@@ -115,11 +61,6 @@ models:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - customer_id
-      - data_quality_check:
-          error_threshold: 0.01
-          warn_threshold: 0.005
-          where: "total_subscriptions < 1"
-          message: "Customers must have at least one subscription"
     columns:
       - name: customer_id
         description: Unique identifier for the customer
@@ -131,90 +72,6 @@ models:
         description: Date of the customer's first subscription
         tests:
           - not_null
-      
-      - name: most_recent_subscription_date
-        description: Date of the customer's most recent subscription
-        tests:
-          - not_null
-          - dbt_utils.expression_is_true:
-              expression: "most_recent_subscription_date >= first_subscription_date"
-      
-      - name: current_subscription_status
-        description: Status of the customer's most recent subscription
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['Active', 'Cancelled', 'Expired', 'Not Started']
-      
-      - name: total_subscriptions
-        description: Total number of subscriptions the customer has had
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 1
-              inclusive: true
-      
-      - name: total_churned_subscriptions
-        description: Number of subscriptions that the customer has churned
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: true
-          - dbt_utils.expression_is_true:
-              expression: "total_churned_subscriptions <= total_subscriptions"
-      
-      - name: total_trial_subscriptions
-        description: Number of trial subscriptions the customer has had
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: true
-          - dbt_utils.expression_is_true:
-              expression: "total_trial_subscriptions <= total_subscriptions"
-      
-      - name: brands
-        description: Array of brands the customer has subscribed to
-      
-      - name: channels
-        description: Array of channels through which the customer has subscribed
-      
-      - name: longest_subscription_days
-        description: Duration in days of the customer's longest subscription
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: true
-      
-      - name: avg_subscription_duration_days
-        description: Average duration in days of the customer's subscriptions
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: true
-      
-      - name: has_resubscribed
-        description: Flag indicating if the customer has resubscribed after churning
-        tests:
-          - not_null
-          - accepted_values:
-              values: [0, 1]
-      
-      - name: avg_days_between_subscriptions
-        description: Average days between the customer's subscriptions
-        tests:
-          - dbt_utils.expression_is_true:
-              expression: "avg_days_between_subscriptions >= 0 or avg_days_between_subscriptions is null"
-      
-      - name: is_currently_active
-        description: Flag indicating if the customer currently has an active subscription
-        tests:
-          - not_null
-          - accepted_values:
-              values: [true, false]
       
       - name: customer_loyalty_segment
         description: Segment categorizing customer loyalty

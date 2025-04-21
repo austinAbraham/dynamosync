@@ -1,5 +1,6 @@
 with subscriptions as (
     select * from {{ ref('stg_subscriptions') }}
+    where fivetran_deleted = false  -- Only include non-deleted records
 ),
 
 customer_subscription_histories as (
@@ -33,7 +34,14 @@ customer_subscription_histories as (
         
         brand,
         channel,
-        offer_id
+        offer_id,
+        
+        -- Additional fields
+        cancellation_process_date,
+        cooling_off_period_end_date,
+        family,
+        rate_plan_id,
+        free_trial_end_date
     from subscriptions
 ),
 
@@ -66,7 +74,14 @@ customer_resubscriptions as (
         a.brand,
         a.channel,
         a.offer_id,
-        a.create_date
+        a.create_date,
+        
+        -- Additional fields
+        a.cancellation_process_date,
+        a.cooling_off_period_end_date,
+        a.family,
+        a.rate_plan_id,
+        a.free_trial_end_date
     from customer_subscription_histories a
 )
 
