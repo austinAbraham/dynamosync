@@ -1,0 +1,94 @@
+version: 2
+
+models:
+  - name: stg_subscriptions
+    description: Standardized subscription data with consistent naming and data types
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - subscription_id
+      - dbt_utils.expression_is_true:
+          expression: "start_date <= coalesce(end_date, current_date())"
+          severity: error
+    columns:
+      - name: subscription_id
+        description: Unique identifier for each subscription
+        tests:
+          - unique
+          - not_null
+      
+      - name: customer_id
+        description: Identifier for the customer who owns the subscription
+        tests:
+          - not_null
+      
+      - name: start_date
+        description: Date when the subscription became active
+        tests:
+          - not_null
+      
+      - name: end_date
+        description: Date when the subscription is set to expire
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "end_date >= start_date or end_date is null"
+      
+      - name: cancellation_date
+        description: Date when the subscription was cancelled
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "cancellation_date >= start_date or cancellation_date is null"
+              severity: error
+      
+      - name: create_date
+        description: Date when the subscription record was created
+        tests:
+          - not_null
+      
+      - name: update_date
+        description: Date when the subscription record was last updated
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "update_date >= create_date"
+      
+      - name: brand
+        description: Brand associated with the subscription
+        tests:
+          - not_null
+      
+      - name: channel
+        description: Channel through which the subscription was acquired
+      
+      - name: billing_subscription_id
+        description: ID used in the billing system
+      
+      - name: offer_id
+        description: ID of the offer associated with the subscription
+      
+      - name: rate_plan_id
+        description: ID of the rate plan for the subscription
+      
+      - name: free_trial_end_date
+        description: End date of the free trial period, if applicable
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "free_trial_end_date >= start_date or free_trial_end_date is null"
+      
+      - name: amendment_status
+        description: Status of any amendments to the subscription
+      
+      - name: fulfillment_status
+        description: Status of fulfillment process
+      
+      - name: term_action_status
+        description: Status of term actions
+      
+      - name: version
+        description: Version number of the subscription record
+        tests:
+          - not_null
+      
+      - name: dbt_loaded_at
+        description: Timestamp when this record was loaded by dbt
+        tests:
+          - not_null

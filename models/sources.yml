@@ -1,0 +1,191 @@
+version: 2
+
+sources:
+  - name: dynamodb
+    database: DBT_PRO
+    schema: DYNAMODB_TEST
+    tables:
+      - name: SUBSCRIPTION_POC
+        description: Raw subscription data from DynamoDB via Fivetran
+        columns:
+          - name: customerId
+            description: Unique identifier for the customer
+            tests:
+              - not_null
+          - name: subscriptionId
+            description: Unique identifier for the subscription
+          - name: startDt
+            description: Date the subscription started
+          - name: endDt
+            description: Date the subscription ended
+          - name: brand
+            description: The brand associated with the subscription
+            tests:
+              - accepted_values:
+                  values: ['brand1', 'brand2', 'brand3'] # Replace with your actual brand values
+                  severity: warn
+              - not_null
+          - name: channel
+            description: Channel through which the subscription was acquired
+            tests:
+              - accepted_values:
+                  values: ['web', 'mobile', 'partner', 'direct'] # Replace with your actual channel values
+                  severity: warn
+          - name: cancellationDt
+            description: Date the subscription was cancelled
+          - name: offerId
+            description: Identifier of the offer
+          # Add descriptions for other relevant columns
+
+
+
+
+# version: 2
+
+# sources:
+#   - name: dynamodb
+#     database: DBT_PROJECT
+#     schema: DYNAMODB_TEST
+#     loader: fivetran
+#     freshness:
+#       warn_after: {count: 12, period: hour}
+#       error_after: {count: 24, period: hour}
+#     loaded_at_field: updateDt  # Assuming this column tracks last modification time
+    
+#     tables:
+#       - name: SUBSCRIPTION_POC
+#         description: Raw subscription data from DynamoDB via Fivetran
+        
+#         # Data quality tests
+#         tests:
+#           - dbt_utils.unique_combination_of_columns:
+#               combination_of_columns: 
+#                 - subscriptionId
+#           - dbt_utils.not_null:
+#               column_name: subscriptionId
+        
+#         # Metadata tests
+#         meta:
+#           owner: "Data Engineering Team"
+#           contains_pii: true
+#           update_frequency: "hourly"
+        
+#         columns:
+#           - name: customerId
+#             description: Unique identifier for the customer
+#             tests:
+#               - not_null
+          
+#           - name: subscriptionId
+#             description: Unique identifier for the subscription
+#             tests:
+#               - unique
+#               - not_null
+          
+#           - name: startDt
+#             description: Date the subscription started
+#             tests:
+#               - not_null
+#               - dbt_utils.not_null_proportion:
+#                   at_least: 0.99
+#               - dbt_date.date_before:
+#                   compare_column: endDt
+#                   date_part: day
+#                   interval: 0
+#                   or_equal_to: true
+          
+#           - name: endDt
+#             description: Date the subscription ended
+#             tests:
+#               - dbt_utils.accepted_range:
+#                   min_value: "2010-01-01"
+#                   max_value: "2030-12-31"
+#                   inclusive: true
+#                   where: "endDt is not null"
+          
+#           - name: brand
+#             description: The brand associated with the subscription
+#             tests:
+#               - accepted_values:
+#                   values: ['brand1', 'brand2', 'brand3'] # Replace with your actual brand values
+#                   severity: warn
+#               - not_null
+          
+#           - name: channel
+#             description: Channel through which the subscription was acquired
+#             tests:
+#               - accepted_values:
+#                   values: ['web', 'mobile', 'partner', 'direct'] # Replace with your actual channel values
+#                   severity: warn
+          
+#           - name: cancellationDt
+#             description: Date the subscription was cancelled
+#             tests:
+#               - dbt_date.date_between:
+#                   start_date_column: startDt
+#                   end_date_column: endDt
+#                   or_equal_to: true
+#                   where: "cancellationDt is not null"
+          
+#           - name: offerId
+#             description: Identifier of the offer
+#             tests:
+#               - dbt_utils.at_least_one
+#               - relationships:
+#                   to: ref('seed_offers')  # Assuming you have a seed file with valid offers
+#                   field: offer_id
+#                   severity: warn  # Set to warn in case seed file isn't available yet
+          
+#           - name: version
+#             description: Version number of the subscription record
+#             tests:
+#               - dbt_utils.accepted_range:
+#                   min_value: 1
+#                   inclusive: true
+          
+#           - name: createDt
+#             description: Date when the subscription was created
+#             tests:
+#               - not_null
+#               - dbt_utils.date_before:
+#                   datepart: day
+#                   field: updateDt
+#                   or_equal_to: true
+          
+#           - name: updateDt
+#             description: Date when the subscription was last updated
+#             tests:
+#               - not_null
+          
+#           - name: freeTrialEndDt
+#             description: Date when the free trial period ends
+#             tests:
+#               - dbt_date.date_after:
+#                   compare_column: startDt
+#                   date_part: day
+#                   interval: 0  
+#                   or_equal_to: true
+#                   where: "freeTrialEndDt is not null"
+          
+#           - name: family
+#             description: Product family of the subscription
+          
+#           - name: ratePlanId
+#             description: Identifier for the rate plan
+#             tests:
+#               - dbt_utils.not_null_proportion:
+#                   at_least: 0.95
+          
+#           - name: amendmentStatus
+#             description: Status of any amendments to the subscription
+#             tests:
+#               - accepted_values:
+#                   values: ['pending', 'approved', 'rejected', 'cancelled']
+#                   where: "amendmentStatus is not null"
+          
+#           - name: fulfillmentStatus 
+#             description: Status of subscription fulfillment
+#             tests:
+#               - accepted_values:
+#                   values: ['pending', 'fulfilled', 'failed']
+#                   where: "fulfillmentStatus is not null"

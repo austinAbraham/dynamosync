@@ -1,0 +1,8 @@
+version: 2
+
+# This is a placeholder file - see individual schema files in each model directory
+# Schema files have been separated by layer for better organization:
+# - models/staging/staging_schema.yml
+# - models/intermediate/intermediate_schema.yml
+# - models/mart/mart_schema.yml
+# - models/utils/utils_schema.yml

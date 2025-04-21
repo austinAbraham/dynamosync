@@ -1,0 +1,6 @@
+# Package dependencies
+packages:
+  - package: dbt-labs/dbt_utils
+    version: 0.8.1
+  - package: dbt-labs/metrics
+    version: 0.3.5
