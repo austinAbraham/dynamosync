@@ -1,5 +1,5 @@
 with source as (
-    select * from {{ source('dynamodb', 'SUBSCRIPTION_POC') }}
+    select * from {{ ref('raw_subscription_poc') }}
 ),
 
 renamed as (

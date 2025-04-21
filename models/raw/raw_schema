@@ -1,0 +1,48 @@
+version: 2
+
+models:
+  - name: raw_subscription_poc
+    description: Raw pass-through of the subscription data from DynamoDB via Fivetran
+    
+    columns:
+      - name: CUSTOMER_ID
+        description: Unique identifier for the customer
+      
+      - name: SUBSCRIPTION_ID
+        description: Unique identifier for the subscription
+      
+      - name: START_DT
+        description: Date the subscription started
+      
+      - name: END_DT
+        description: Date the subscription ended
+      
+      - name: BRAND
+        description: The brand associated with the subscription
+      
+      - name: CHANNEL
+        description: Channel through which the subscription was acquired
+      
+      - name: CANCELLATION_DT
+        description: Date the subscription was cancelled
+      
+      - name: OFFER_ID
+        description: Identifier of the offer
+      
+      - name: VERSION
+        description: Version number of the subscription record
+      
+      - name: CREATE_DT
+        description: Date when the subscription was created
+      
+      - name: UPDATE_DT
+        description: Date when the subscription was last updated
+      
+      - name: FREE_TRIAL_END_DT
+        description: Date when the free trial period ends
+      
+      - name: _FIVETRAN_SYNCED
+        description: Timestamp of last Fivetran sync
+        
+      - name: _FIVETRAN_DELETED
+        description: Flag indicating if record was deleted in source

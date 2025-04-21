@@ -20,6 +20,10 @@ clean-targets:
 models:
   dynamosync:
     # Configure your models here
+    raw:
+      +materialized: view
+      +schema: raw
+    
     staging:
       +materialized: view
       +schema: staging
