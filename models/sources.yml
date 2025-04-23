@@ -81,3 +81,112 @@ sources:
             
           - name: _FIVETRAN_DELETED
             description: Fivetran deleted flag
+
+
+# version: 2
+
+# sources:
+#   - name: dynamodb
+#     # Change to match your actual database - based on error, DEV doesn't exist
+#     database: "{{ target.database }}"  # This will use the database from your profile
+#     schema: DYNAMODB_TEST
+    
+#     tables:
+#       - name: SUBSCRIPTION_POC
+#         description: Raw subscription data from DynamoDB via Fivetran
+        
+#         # Basic table-level tests
+#         tests:
+#           - dbt_utils.unique_combination_of_columns:
+#               combination_of_columns: 
+#                 - SUBSCRIPTIONID
+        
+#         columns:
+#           - name: CUSTOMERID
+#             description: Unique identifier for the customer
+#             tests:
+#               - not_null
+          
+#           - name: SUBSCRIPTIONID
+#             description: Unique identifier for the subscription
+#             tests:
+#               - not_null
+#               - unique
+          
+#           - name: STARTDT
+#             description: Date the subscription started
+#             tests:
+#               - not_null
+          
+#           - name: ENDDT
+#             description: Date the subscription ended
+#             tests:
+#               - dbt_utils.expression_is_true:
+#                   expression: "ENDDT >= STARTDT OR ENDDT IS NULL"
+#                   severity: warn
+          
+#           - name: BRAND
+#             description: The brand associated with the subscription
+#             tests:
+#               - not_null
+          
+#           - name: CHANNEL
+#             description: Channel through which the subscription was acquired
+          
+#           - name: CANCELLATIONDT
+#             description: Date the subscription was cancelled
+#             tests:
+#               - dbt_utils.expression_is_true:
+#                   expression: "CANCELLATIONDT >= STARTDT OR CANCELLATIONDT IS NULL"
+#                   severity: warn
+          
+#           - name: OFFERID
+#             description: Identifier of the offer
+          
+#           - name: VERSION
+#             description: Version number of the subscription record
+#             tests:
+#               - not_null
+          
+#           - name: CREATEDT
+#             description: Date when the subscription was created
+#             tests:
+#               - not_null
+          
+#           - name: UPDATEDT
+#             description: Date when the subscription was last updated
+#             tests:
+#               - dbt_utils.expression_is_true:
+#                   expression: "UPDATEDT >= CREATEDT OR UPDATEDT IS NULL"
+#                   severity: warn
+          
+#           - name: FREETRIALENDDT
+#             description: Date when the free trial period ends
+#             tests:
+#               - dbt_utils.expression_is_true:
+#                   expression: "FREETRIALENDDT >= STARTDT OR FREETRIALENDDT IS NULL"
+#                   severity: warn
+          
+#           - name: FAMILY
+#             description: Product family of the subscription
+          
+#           - name: RATEPLANID
+#             description: Identifier for the rate plan
+          
+#           - name: AMENDMENTSTATUS
+#             description: Status of any amendments to the subscription
+          
+#           - name: FULFILLMENTSTATUS 
+#             description: Status of subscription fulfillment
+            
+#           - name: TERMACTIONSTATUS
+#             description: Status of term actions
+            
+#           - name: UPC
+#             description: Universal Product Code
+            
+#           - name: BENEFITS
+#             description: Subscription benefits information
+            
+#           - name: BILLINGSUBSCRIPTIONID
+#             description: ID used in the billing system
