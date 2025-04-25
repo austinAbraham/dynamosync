@@ -1,0 +1,13 @@
+dynamosync:
+  outputs:
+    dev:
+      account: cmlsdeq-sc26109
+      database: DBT_PROJECT
+      password: StrongPassword123
+      role: DBT_ROLE
+      schema: DEV
+      threads: 1
+      type: snowflake
+      user: DBT_USER
+      warehouse: DBT_WH
+  target: dev
