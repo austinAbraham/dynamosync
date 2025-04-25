@@ -1,0 +1,6 @@
+locations:
+- build:
+    directory: ./dynamosync
+  code_source:
+    module_name: dynamosync.definitions
+  location_name: dynamosync
